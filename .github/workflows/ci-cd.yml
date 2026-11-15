@@ -17,13 +17,163 @@ jobs:
       - name: Build Docker image
         run: docker build -t calculator:latest .
 
-      - name: Run container and test
+      - name: Start container
         run: |
           docker run -d -p 5000:5000 --name calculator-test calculator:latest
           sleep 3
-          curl -s -X POST http://localhost:5000/calculate \
+
+      - name: Test addition
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
             -H "Content-Type: application/json" \
-            -d '{"expression": "2+2"}'
+            -d '{"expression": "2+2"}')
+          echo "2+2 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 4' || exit 1
+
+      - name: Test subtraction
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "10-3"}')
+          echo "10-3 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 7' || exit 1
+
+      - name: Test multiplication
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "6*7"}')
+          echo "6*7 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 42' || exit 1
+
+      - name: Test division
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "100/4"}')
+          echo "100/4 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 25.0' || exit 1
+
+      - name: Test decimal addition
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "3.5+2.5"}')
+          echo "3.5+2.5 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 6.0' || exit 1
+
+      - name: Test decimal multiplication
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "2.5*4"}')
+          echo "2.5*4 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 10.0' || exit 1
+
+      - name: Test negative numbers
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "-5+3"}')
+          echo "-5+3 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": -2' || exit 1
+
+      - name: Test large numbers
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "999999+1"}')
+          echo "999999+1 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 1000000' || exit 1
+
+      - name: Test zero multiplication
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "123*0"}')
+          echo "123*0 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 0' || exit 1
+
+      - name: Test order of operations
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "2+3*4"}')
+          echo "2+3*4 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 14' || exit 1
+
+      - name: Test parentheses
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "(2+3)*4"}')
+          echo "(2+3)*4 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 20' || exit 1
+
+      - name: Test division by integer
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "7/2"}')
+          echo "7/2 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 3.5' || exit 1
+
+      - name: Test multiple operations 1
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "50-30+20"}')
+          echo "50-30+20 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 40' || exit 1
+
+      - name: Test multiple operations 2
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "100/2/5"}')
+          echo "100/2/5 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 10.0' || exit 1
+
+      - name: Test decimal subtraction
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "10.5-3.2"}')
+          echo "10.5-3.2 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 7.3' || exit 1
+
+      - name: Test negative result
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "5-10"}')
+          echo "5-10 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": -5' || exit 1
+
+      - name: Test chain addition
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "1+2+3+4+5"}')
+          echo "1+2+3+4+5 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 15' || exit 1
+
+      - name: Test combined multiply-add
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "3*10+7"}')
+          echo "3*10+7 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 37' || exit 1
+
+      - name: Test combined divide-subtract
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "50/2-5"}')
+          echo "50/2-5 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 20.0' || exit 1
 
       - name: Stop container
+        if: always()
         run: docker stop calculator-test
