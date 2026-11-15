@@ -177,3 +177,20 @@ jobs:
       - name: Stop container
         if: always()
         run: docker stop calculator-test
+
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_KEY }}
+        with:
+          args: >
+            -Dsonar.projectKey=anilk200_learning_day
+            -Dsonar.organization=anilk200
+            -Dsonar.python.version=3.10
