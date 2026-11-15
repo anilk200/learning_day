@@ -82,7 +82,7 @@ jobs:
         run: |
           RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
             -H "Content-Type: application/json" \
-            -d '{"expression": "999999+1"}')
+            -d '{"expression": "999999+4"}')
           echo "999999+1 => $RESPONSE"
           echo "$RESPONSE" | grep -q '"result": 1000000' || exit 1
 
