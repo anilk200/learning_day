@@ -162,9 +162,9 @@ jobs:
         run: |
           RESPONSE=$(curl -s -X POST http://localhost:5000/calculate \
             -H "Content-Type: application/json" \
-            -d '{"expression": "3*10+7"}')
-          echo "3*10+7 => $RESPONSE"
-          echo "$RESPONSE" | grep -q '"result": 37' || exit 1
+            -d '{"expression": "3*10+5"}')
+          echo "3*10+5 => $RESPONSE"
+          echo "$RESPONSE" | grep -q '"result": 35' || exit 1
 
       - name: Test combined divide-subtract
         run: |
