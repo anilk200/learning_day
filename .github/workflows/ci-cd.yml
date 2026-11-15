@@ -1,0 +1,29 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t calculator:latest .
+
+      - name: Run container and test
+        run: |
+          docker run -d -p 5000:5000 --name calculator-test calculator:latest
+          sleep 3
+          curl -s -X POST http://localhost:5000/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"expression": "2+2"}'
+
+      - name: Stop container
+        run: docker stop calculator-test
